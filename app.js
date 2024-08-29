@@ -4,46 +4,38 @@ const { getTopics } = require("./controllers/topics-controller");
 
 app.use(express.json());
 
-// set endpoint
+// Topics endpoint
 app.get("/api/topics", getTopics);
 
-app.use((err, req, res, next) => {
-	console.error(err.stack);
-	next(err);
-})
+// Request method whitelist/handler
+app.use((request, response, next) => {
+  // if (!/^(GET|PUT|POST|DELETE)$/.test(request.method)) {
+  if (!/^(GET)$/.test(request.method)) {
+    response.status(405).json({ msg: "Method Not Allowed" });
+  } else {
+    next();
+  }
+});
 
-// Error Handling
-// app.use('/api/topics', (request, response, next) => {
-//   if (request.method !== 'GET') {
-//     response.status(405).send({ msg: 'Method Not Allowed' });
-//   } else {
-//     next();
-//   }
-// });
-// app.use((err, request, response, next) => {
-//   console.log(`error code: ${err.code} `);
-//   if (err.code === "23502") {
-//     response.status(400).send({ msg: "Bad request" });
-//   } else {
-//     next(err);
-//   }
-// });
+// 404 handler for unknown routes (sometimes can have errors that look normal)
+app.all("*", (request, response, next) => {
+  response.status(404).json({ msg: "Route not found" });
+});
+
+// Error handler
 app.use((err, request, response, next) => {
-  if (err.message === "NOT FOUND") {
-    console.log(err);
-    response.status(404).send(err);
+  //console.log(err);
+  if (err.status === 400) {
+    response.status(400).json({ msg: "Bad Request" });
+  } else if (err.status === 404) {
+    response.status(404).json({ msg: "Not Found" });
+  } else if (err.status === 405) {
+    response.status(405).json({ msg: "Method Not Allowed" });
+  } else if (err.status === 500) {
+    response.status(500).json({ msg: "Internal Server Error" });
   } else {
     next(err);
   }
 });
-// app.use((err, request, response, next) => {
-//   console.log(err);
-//   response.status(404).send({ msg: "Endpoint does not exist" });
-//   if ("404") {
-//     console.log("help meeeee");
-//     response.status(404).send({ msg: "Endpoint does not exist" });
-//   } else {
-//  next(err);
-// });
 
-module.exports = app;
+module.exports = { app };
