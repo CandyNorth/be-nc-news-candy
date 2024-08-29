@@ -1,11 +1,17 @@
 const express = require("express");
 const app = express();
+const endpoints = require("./endpoints.json");
 const { getTopics } = require("./controllers/topics-controller");
 
 app.use(express.json());
 
 // Topics endpoint
 app.get("/api/topics", getTopics);
+
+// API index endpoint
+app.get("/api", (request, response) => {
+  response.json(endpoints);
+});
 
 // Request method whitelist/handler
 app.use((request, response, next) => {
@@ -38,4 +44,4 @@ app.use((err, request, response, next) => {
   }
 });
 
-module.exports = { app };
+module.exports = { app, endpoints };
