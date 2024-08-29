@@ -1,4 +1,4 @@
-const { app } = require("../app");
+const { app, endpoints } = require("../app");
 const request = require("supertest");
 const req = request(app);
 const db = require("../db/connection");
@@ -57,6 +57,59 @@ describe("app.js", () => {
     test("DELETE:405 will return 'Method Not Allowed' for an unsupported HTTP method", () => {
       return req
         .delete("/api/topics")
+        .expect(405)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Method Not Allowed");
+        });
+    });
+  });
+  describe("/api", () => {
+    test("GET:200 gives a JSON object describing all of the available endpoints that there are", () => {
+      return req
+        .get("/api")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).toEqual(endpoints);
+        });
+    });
+    test("GET:200 the response includes all of the endpoints in the browser from the endpoints.json file", () => {
+      return req
+        .get("/api")
+        .expect(200)
+        .then(({ body }) => {
+          //console.log(Object.keys(body))
+          // --> Object.keys(something) gets all the keys of the something obj
+          // jest will compare ....
+          expect(Object.keys(body)).toEqual(Object.keys(endpoints));
+        });
+    });
+    test("GET:200 the contents of a specific endpoint matches/is the same as the endpoints.json file", () => {
+      return req
+        .get("/api")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body["GET /api/topics"]).toEqual(endpoints["GET /api/topics"]);
+        });
+    });
+    test("GET:404 returns an error for a route that doesnt exist", () => {
+      return req
+        .get("/api/non-existent-route")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Route not found");
+        });
+    });
+    test("GET:400 returns an error for a badly written/formed request", () => {
+      return req
+        .get("/api/articles/bad-request/%")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad Request");
+        });
+    });
+    test("POST:405 returns an error when using the wrong HTTP method", () => {
+      return req
+        .post("/api")
         .expect(405)
         .then(({ body }) => {
           expect(body.msg).toBe("Method Not Allowed");
