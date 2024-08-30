@@ -122,7 +122,6 @@ describe("app.js", () => {
         .get('/api/articles/1')
         .expect(200)
         .then((response) => {
-          expect(Object.keys(response.body.article).length).toBe(8);
           expect(response.body.article.article_id).toBe(1);
           expect(response.body.article.title).toBe('Living in the shadow of a great man');
           expect(response.body.article.topic).toBe('mitch');

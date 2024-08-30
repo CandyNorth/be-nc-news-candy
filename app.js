@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const endpoints = require("./endpoints.json");
 const { getTopics } = require("./controllers/topics-controller");
-const { getArticleById, deleteArticleById } = require("./controllers/articles-controller");
+const { getArticleById } = require("./controllers/articles-controller");
 
 app.use(express.json());
 
@@ -15,7 +15,6 @@ app.get("/api", (request, response) => {
 });
 
 app.get('/api/articles/:article_id', getArticleById);
-app.delete('/api/articles/:article_id', deleteArticleById);
 
 // Request method whitelist/handler
 app.use((request, response, next) => {
@@ -32,6 +31,15 @@ app.all("*", (request, response, next) => {
   response.status(404).json({ msg: "Route not found" });
 });
 
+// Custom Error handlers
+app.use((err, request, response, next) => {
+  if (err.code === "22P02") {
+    response.status(400).json({ msg: "Bad Request"});
+  } else {
+    next(err);
+  }
+})
+
 // Error handler
 app.use((err, request, response, next) => {
   //console.log(err);
@@ -44,6 +52,7 @@ app.use((err, request, response, next) => {
   } else if (err.status === 500) {
     response.status(500).json({ msg: "Internal Server Error" });
   } else {
+    console.log(err);
     next(err);
   }
 });
