@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const endpoints = require("./endpoints.json");
 const { getTopics } = require("./controllers/topics-controller");
+const { getArticleById, deleteArticleById } = require("./controllers/articles-controller");
 
 app.use(express.json());
 
@@ -12,6 +13,9 @@ app.get("/api/topics", getTopics);
 app.get("/api", (request, response) => {
   response.json(endpoints);
 });
+
+app.get('/api/articles/:article_id', getArticleById);
+app.delete('/api/articles/:article_id', deleteArticleById);
 
 // Request method whitelist/handler
 app.use((request, response, next) => {
